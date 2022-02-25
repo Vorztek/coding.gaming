@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Tournament</title>
+  <script type="application/javascript" src="https://unpkg.com/react@17.0.2/umd/react.production.min.js"></script>
+  <script type="application/javascript" src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
+  <script type="application/javascript" src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+  <style>.battle-player-win {
+    color: #00ae00;
+    background-color: #ffffff;
+}
+
+.battle-player-loose {
+    opacity: 0.3;
+    color: red
+}
+.battle-wrapper{
+    display:flex;
+    align-items: center;
+    border-bottom: 3px solid #333;
+}
+
+.battle {
+  margin: 10px;
+  padding: 5px;
+  border: 1px solid rgb(0, 0, 0);
+  box-shadow: 2px 2px 4px #20202055;
+  background-color:#79d0f8;
+
+}
+.battle-list-item{
+  flex:1 1;
+
+}
+
+.battle-player{
+  margin-bottom: 10px;
+  position:relative;
+}
+
+h2,h3{
+  padding:0;
+  margin:0;
+}
+@media screen and (max-width: 440px){
+  .battle{ background-color: pink;}
+  .battle-wrapper{
+    flex-direction: column;
+    border-bottom: 3px solid #333;
+}
+
+
+}
+  
+@media screen and (max-width: 460px) {
+ .battle {
+   border: 1px solid black;
+ }
+
+.battle-wrapper {
+ flex-direction : column;
+ width: 100%;
+ padding: 10px;
+ border-bottom: 3px solid #333;
+}
+
+
+}
+.listNames {
+        position: absolute;
+        left: 0;
+        top: 44px;
+        border: 1px solid rgb(0, 0, 0);
+        border-left: 1px solid rgb(0, 0, 0);
+        background-color: #79d0f8;
+        width: 100px;
+        z-index: 10;
+        display: none;
+        height: 90px;
+        overflow-y: scroll;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+ }
+ 
+ .listNames li{
+      border-bottom: 1px solid grey;
+ }
+
+.user-name h2{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  
+}
+
+.user-name img{
+  width:30px;
+}
+
+
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script type="text/babel">
+ 
+const rootElement = document.getElementById('app')
+
+
+
+ function PairOfPlayers(props) {
+  const onClickListItem1 = (e) => 
+  {setUsername1(e.target.textContent)
+    refList1.current.style.display = "none";
+}
+
+  const onClickListItem2 = (name, avatar) => {
+    setUsername2({...username2, "joueur_name" : name, "joueur_avatar" : avatar});
+    refList2.current.style.display = "none";
+
+  }
+  
+  
+    
+
+  
+  const onFocusHandle1 = () =>  {
+          refList1.current.style.display = "block";
+        }
+  const onFocusHandle2 = () =>  {
+          refList2.current.style.display = "block";
+        }
+    const refList1 = React.useRef();
+    const refList2 = React.useRef();
+
+
+
+    const [listPlayers, setListPlayers] = React.useState(["Ashton","Billy","Claire"]); 
+    React.useEffect( () => {
+              fetch("http://localhost/joueurs/player-list-avatar.php")
+        .then(response => response.json() )
+        .then(data =>  {setListPlayers(data)} )
+        .catch(e => console.error(e))
+          }
+        ,[]);
+
+    const [username1, setUsername1] = React.useState(null);
+    const onBlurHandle1 = (e) => { 
+            setUsername1(prevState => e.target.value)}
+           
+    
+    const [score1, setScore1] = React.useState(null);
+    const onBlurScore1 = (e) => { 
+            setScore1(prevState => Number(e.target.value) )}
+    
+    
+    const [username2, setUsername2] = React.useState({});
+    const onBlurHandle2 = (e) => { 
+            setUsername2(prevState => e.target.value)}
+    
+    
+    const [score2, setScore2] = React.useState(null);
+    const onBlurScore2 = (e) => { 
+            setScore2(prevState => Number(e.target.value) )}
+
+let classNameScore = "battle-player battle-player";
+const url = "http://localhost/joueurs/";
+
+let egalite = ""; 
+
+if(score1 && score2){
+  if(score1 == score2)
+    egalite = "score identique";
+}
+    
+    
+    return <div className="battle">
+    { egalite }
+ <div className={ !score1 ? classNameScore : score1 > score2 ? classNameScore  + "-win" : classNameScore + "-loose" }>
+  <div className="user-name">
+    { username1 ? 
+                <h2>{username1}</h2>
+                : <div><label>Name : </label>
+                <input type="text" name="username1" placeholder="Your name" onBlur={onBlurHandle1} onFocus={onFocusHandle1}/>
+                </div>
+                }
+
+<ul className="listNames" ref={refList1}>
+{ 
+ listPlayers.map( player => 
+  <li onClick={onClickListItem1}>
+  {player.joueur_name} <img src={ url + player.joueur_avatar} />
+   </li>
+   )
+ }
+</ul>
+
+  </div>
+  <div className="score">
+    { score1 ? 
+                <h2>{score1}</h2>
+                : <div><label>Number : </label>
+                <input type="number" number="score1" placeholder="saisir votre score" onBlur={onBlurScore1}  />
+                </div>
+                }      
+
+                
+   </div>
+ </div> <div className={ !score2 ? classNameScore : score2 > score1 ? classNameScore  + "-win" : classNameScore + "-loose" }>
+  <div className="user-name">
+    { username2.joueur_name ? 
+                <h2>{username2.joueur_name}<img src={url + username2.joueur_avatar} /></h2>
+                : <div><label>Name : </label>
+                <input type="text" name="username2" placeholder="Your name" onBlur={onBlurHandle2}  onFocus={onFocusHandle2}/>
+                </div>
+                }
+<ul className="listNames" ref={refList2}>
+{ 
+ listPlayers.map( player => 
+  <li onClick={ () => onClickListItem2(player.joueur_name, player.joueur_avatar) }>
+  {player.joueur_name} <img src={ url + player.joueur_avatar} />
+   </li>)
+ }
+</ul>
+
+  </div>
+  <div className="score">
+    { score2 ? 
+                <h2>{score2}</h2>
+                : <div><label>Number : </label>
+                <input type="number" number="score2" placeholder="saisir votre score" onBlur={onBlurScore2}  />
+                </div>
+                }     
+
+    </div>
+ </div>
+</div>;
+}
+
+
+function Tournament(props){
+  return(<div class="battle-wrapper">
+  <div className="battle-list battle-list-item"> QUART DE FINALE
+    <PairOfPlayers level={1}/> 
+    <PairOfPlayers level={2}/>
+    <PairOfPlayers level={3}/>
+    <PairOfPlayers level={4}/>
+  
+  </div>
+
+  <div className="battle-list_2 battle-list-item"> DEMI-FINALE
+    <PairOfPlayers level={1}/> 
+    <PairOfPlayers level={2}/>
+      
+  </div>
+  <div className="battle-list_3 battle-list-item"> FINALE
+    <PairOfPlayers level={1}/> 
+    
+  </div>
+</div>);
+ 
+<PairOfPlayers level="1" />
+}
+
+<Tournament libelle="Gaming" />
+    ReactDOM.render(
+      <Tournament />,
+      rootElement
+    )
+</script>
+
+</body>
+
+</html>
